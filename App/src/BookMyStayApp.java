@@ -1,6 +1,5 @@
 public class BookMyStayApp {
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
     class Reservation {
         String guestName;
@@ -10,47 +9,93 @@ import java.util.Queue;
             this.guestName = guestName;
             this.roomType = roomType;
         }
-
-        void display() {
-            System.out.println("Guest: " + guestName + ", Requested Room: " + roomType);
-        }
     }
 
     class BookingRequestQueue {
-        private Queue<Reservation> queue;
+        private Queue<Reservation> queue = new LinkedList<>();
 
-        BookingRequestQueue() {
-            queue = new LinkedList<>();
+        void addRequest(Reservation r) {
+            queue.offer(r);
         }
 
-        void addRequest(Reservation reservation) {
-            queue.offer(reservation);
+        Reservation getNextRequest() {
+            return queue.poll();
         }
 
-        void displayQueue() {
-            System.out.println("\n--- Booking Request Queue ---");
-            for (Reservation r : queue) {
-                r.display();
+        boolean isEmpty() {
+            return queue.isEmpty();
+        }
+    }
+
+    class RoomInventory {
+        private HashMap<String, Integer> inventory = new HashMap<>();
+
+        RoomInventory() {
+            inventory.put("Single Room", 2);
+            inventory.put("Double Room", 1);
+            inventory.put("Suite Room", 1);
+        }
+
+        int getAvailability(String type) {
+            return inventory.getOrDefault(type, 0);
+        }
+
+        void reduceAvailability(String type) {
+            inventory.put(type, getAvailability(type) - 1);
+        }
+    }
+
+    class BookingService {
+        private HashMap<String, Set<String>> allocatedRooms = new HashMap<>();
+        private int counter = 1;
+
+        void processRequests(BookingRequestQueue queue, RoomInventory inventory) {
+
+            while (!queue.isEmpty()) {
+                Reservation r = queue.getNextRequest();
+                String type = r.roomType;
+
+                if (inventory.getAvailability(type) > 0) {
+
+                    String roomId = type.replace(" ", "").toUpperCase() + counter++;
+                    allocatedRooms.putIfAbsent(type, new HashSet<>());
+
+                    if (!allocatedRooms.get(type).contains(roomId)) {
+                        allocatedRooms.get(type).add(roomId);
+                        inventory.reduceAvailability(type);
+
+                        System.out.println("Booking Confirmed: " + r.guestName +
+                                " | Room Type: " + type +
+                                " | Room ID: " + roomId);
+                    }
+
+                } else {
+                    System.out.println("Booking Failed (No Availability): " + r.guestName +
+                            " | Room Type: " + type);
+                }
             }
         }
     }
 
-    public class UseCase5BookingRequestQueue {
+    public class UseCase6RoomAllocationService {
 
         public static void main(String[] args) {
 
-            BookingRequestQueue requestQueue = new BookingRequestQueue();
+            BookingRequestQueue queue = new BookingRequestQueue();
 
-            requestQueue.addRequest(new Reservation("Alice", "Single Room"));
-            requestQueue.addRequest(new Reservation("Bob", "Double Room"));
-            requestQueue.addRequest(new Reservation("Charlie", "Suite Room"));
-            requestQueue.addRequest(new Reservation("Diana", "Single Room"));
+            queue.addRequest(new Reservation("Alice", "Single Room"));
+            queue.addRequest(new Reservation("Bob", "Double Room"));
+            queue.addRequest(new Reservation("Charlie", "Single Room"));
+            queue.addRequest(new Reservation("Diana", "Suite Room"));
+            queue.addRequest(new Reservation("Eve", "Suite Room"));
 
-            System.out.println("Book My Stay App - v5.0");
+            RoomInventory inventory = new RoomInventory();
+            BookingService service = new BookingService();
 
-            requestQueue.displayQueue();
+            System.out.println("Book My Stay App - v6.0\n");
+
+            service.processRequests(queue, inventory);
         }
     }
-
 }
 
