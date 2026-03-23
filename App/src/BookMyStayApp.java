@@ -1,5 +1,5 @@
 public class BookMyStayApp {
-  import java.util.HashMap;
+    import java.util.HashMap;
 
     abstract class Room {
         String type;
