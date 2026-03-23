@@ -1,4 +1,6 @@
 public class BookMyStayApp {
+  import java.util.HashMap;
+
     abstract class Room {
         String type;
         int beds;
@@ -35,32 +37,54 @@ public class BookMyStayApp {
         }
     }
 
-    public class UseCase2RoomInitialization {
+    class RoomInventory {
+        private HashMap<String, Integer> inventory;
 
-        public static void main(String[] args) {
+        RoomInventory() {
+            inventory = new HashMap<>();
+            inventory.put("Single Room", 5);
+            inventory.put("Double Room", 3);
+            inventory.put("Suite Room", 0);
+        }
 
-            Room single = new SingleRoom();
-            Room doub = new DoubleRoom();
-            Room suite = new SuiteRoom();
-
-            int singleAvailable = 5;
-            int doubleAvailable = 3;
-            int suiteAvailable = 2;
-
-            System.out.println("Book My Stay App - v2.1");
-
-            System.out.println("\n--- Room Details ---");
-
-            single.display();
-            System.out.println("Available: " + singleAvailable + "\n");
-
-            doub.display();
-            System.out.println("Available: " + doubleAvailable + "\n");
-
-            suite.display();
-            System.out.println("Available: " + suiteAvailable + "\n");
+        int getAvailability(String roomType) {
+            return inventory.getOrDefault(roomType, 0);
         }
     }
 
+    class RoomSearchService {
+
+        void searchRooms(Room[] rooms, RoomInventory inventory) {
+            System.out.println("\n--- Available Rooms ---");
+
+            for (Room room : rooms) {
+                int available = inventory.getAvailability(room.type);
+
+                if (available > 0) {
+                    room.display();
+                    System.out.println("Available: " + available + "\n");
+                }
+            }
+        }
+    }
+
+    public class UseCase4RoomSearch {
+
+        public static void main(String[] args) {
+
+            Room[] rooms = {
+                    new SingleRoom(),
+                    new DoubleRoom(),
+                    new SuiteRoom()
+            };
+
+            RoomInventory inventory = new RoomInventory();
+            RoomSearchService searchService = new RoomSearchService();
+
+            System.out.println("Book My Stay App - v4.0");
+
+            searchService.searchRooms(rooms, inventory);
+        }
+    }
 }
 
